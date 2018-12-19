@@ -4,7 +4,6 @@ import { NgForm } from '@angular/forms';
 import { PostService } from '../posts.service';
 import { ActivatedRoute, ParamMap, Router } from '@angular/router';
 import { Post } from '../post.model';
-import { post } from 'selenium-webdriver/http';
 
 @Component({
   selector: 'app-post-create-form',
@@ -54,8 +53,6 @@ export class PostCreateFormComponent implements OnInit {
            } else {
              this.mode = 'Create';
              this.postId = null;
-            //  this.post.title = 'Type your title';
-            //  this.post.content = 'Type your content';
            }
         }
       );
@@ -72,13 +69,13 @@ export class PostCreateFormComponent implements OnInit {
         this.postSrv.addPost(formObject.value.title, formObject.value.content);
       }
       else {
-        this.postSrv.updatePost(this.postId, this.post.title, this.post.content);
+        this.postSrv.updatePost(this.postId, formObject.value.title, formObject.value.content);
         // this.goHome(); // back to home route to see all posts
       }
       // this.postCreated.emit(post);
       // emit with the value / things you want to fire to eventHandler
 
-      formObject.reset(); // clear form input fields after submit
+      formObject.resetForm(); // clear form input fields after submit
     }
 
 

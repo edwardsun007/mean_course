@@ -48,7 +48,8 @@ export class PostService {
   /* frontend search directly return you the object, but http call return observerable not the object */
   getPostFromBackEnd(id: string) {
     console.log('start posts.service->getPostFromBackEnd()');
-    return this._http.get<{_id: string, title: string, content: string}>(`http://localhost:3000/api/posts/${id}`); // return the observable
+    return this._http.get<{_id: string, title: string, content: string}>(`http://localhost:3000/api/posts/${id}`);
+    // return the observable, from backend, so its _id
   }
 
 

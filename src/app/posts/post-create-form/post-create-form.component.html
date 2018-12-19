@@ -8,7 +8,7 @@
           name='title'
           required
           minlength="4"
-          [(ngModel)]="post.title"
+          [ngModel]="post?.title"
           #title="ngModel">
 
         <mat-error *ngIf="title.invalid">
@@ -20,12 +20,16 @@
             </mat-error>
         </mat-error>
     </mat-form-field>
-
+    {{ post.content | json }}
     <mat-form-field>
         <textarea matInput rows="6" placeholder="Content" name='content'
            required
+           rows=4
            minlength="3"
-           [(ngModel)]="post.content"
+           name="content"
+           [ngModel]="post?.content"
+           placeholder="Content"
+           required
            #content="ngModel">
         </textarea>
         <mat-error *ngIf="content.invalid && (content.dirty || content.touched)">

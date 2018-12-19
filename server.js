@@ -52,47 +52,46 @@ app.post("/api/posts", (req, res)=>{
   //   {message:"Post added", post: post});
 });
 
-  // update a post by id
-// app.put("/api/posts/:id", (req,res)=>{
-//   console.log('update api called:', req.params.id);
-//   const post = new Post({
-//     id: req.body.id,
-//     title: req.body.title,
-//     content: req.body.content
-//   });
-
-//   Post.updateOne({_id: req.params.id}, post).then( result=> {
-//     console.log(result);
-//     res.json({message:"Update successful!"});
-//   });
-// });
+// update a post by id
+app.put("/api/posts/:id", (req,res)=>{
+  console.log('update api called:', req.params.id);
+  const post = new Post({
+    _id: req.body.id,
+    title: req.body.title,
+    content: req.body.content
+  });
+  Post.updateOne({_id: req.params.id}, post).then( result=> {
+    console.log(result);
+    res.status(200).json({ message: "Update successful!" });
+  });
+});
 
 // find and update a post by id
-app.put("/api/posts/:id", (req, res)=> {
-  console.log('app.put req.body.title=',req.body.title);
-  console.log('app put req.body.content=',req.body.content)
-  Post.findOne(
-      {_id:req.params.id},
-      (err,post)=>{
-          if(err){
-              console.log('Post Not found!');
-              res.json({message:"Error",error:err});
-          }else{
-              console.log('Found post:',post);
-              post.title=req.body.title;
-              post.content=req.body.content;
-              post.save((err,p)=>{
-                  if(err){
-                      console.log('Save from update failed!');
-                      res.json({message:"Error",error:err});
-                  }else{
-                      res.json({message:"update success",data:p});
-                  }
-              })
-          }
-      }
-  );
-});
+// app.put("/api/posts/:id", (req, res)=> {
+//   console.log('app.put req.body.title=',req.body.title);
+//   console.log('app put req.body.content=',req.body.content)
+//   Post.findOne(
+//       {_id:req.params.id},
+//       (err,post)=>{
+//           if(err){
+//               console.log('Post Not found!');
+//               res.json({message:"Error",error:err});
+//           }else{
+//               console.log('Found post:',post);
+//               post.title=req.body.title;
+//               post.content=req.body.content;
+//               post.save((err,p)=>{
+//                   if(err){
+//                       console.log('Save from update failed!');
+//                       res.json({message:"Error",error:err});
+//                   }else{
+//                       res.json({message:"update success",data:p});
+//                   }
+//               })
+//           }
+//       }
+//   );
+// });
 
 // get single post based on id
 app.get("/api/posts/:id", (req,res)=>{
@@ -113,7 +112,7 @@ app.delete("/api/posts/:id", (req,res)=>{
     if(err){
       res.json('delete failed! ',err);
     }else{
-      res.json({ message: "Post deleted!"});
+      res.status(200).jsonjson({ message: "Post deleted!"});
     }
   });
 });
