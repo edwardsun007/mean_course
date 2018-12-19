@@ -1,0 +1,15 @@
+:host{
+  margin-top: 16px; /* 16px = 1rem */
+}
+
+/* mat-accordion mat-expansion-panel{
+  background-color: green;
+} */
+
+.info-txt{
+  text-align: center;
+}
+
+mat-action-row > button {
+  margin-right: 10px;
+}

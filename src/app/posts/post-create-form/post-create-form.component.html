@@ -1,0 +1,49 @@
+<mat-card>
+  <form (submit)="onAddPost(postForm)" #postForm="ngForm">
+    {{ post.title | json }}
+    <mat-card-title>{{mode}} your post here:</mat-card-title>
+    <mat-form-field>
+        <input matInput type="text"
+          placeholder="Title"
+          name='title'
+          required
+          minlength="4"
+          [(ngModel)]="post.title"
+          #title="ngModel">
+
+        <mat-error *ngIf="title.invalid">
+            <mat-error *ngIf="title?.errors.required">
+              Title is required!
+            </mat-error>
+            <mat-error *ngIf="title?.errors.minlength">
+              Title needs at least 4 characters !
+            </mat-error>
+        </mat-error>
+    </mat-form-field>
+
+    <mat-form-field>
+        <textarea matInput rows="6" placeholder="Content" name='content'
+           required
+           minlength="3"
+           [(ngModel)]="post.content"
+           #content="ngModel">
+        </textarea>
+        <mat-error *ngIf="content.invalid && (content.dirty || content.touched)">
+          <div *ngIf="content?.errors.required">
+              Content is required!
+            </div>
+          <div *ngIf="content?.errors.minlength">
+              Content needs at least 4 characters !
+          </div>
+        </mat-error>
+    </mat-form-field>
+
+    <button
+      mat-raised-button
+      color="primary"
+      type="submit"
+      [disabled]="postForm.invalid">Save Post</button>
+     <!--I really prefer disable the submit button when its still invalid input!-->
+
+  </form>
+</mat-card>
