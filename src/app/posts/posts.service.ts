@@ -3,17 +3,18 @@ import { Subject } from 'rxjs';
 import { map } from 'rxjs/operators';
 import { HttpClient } from '@angular/common/http'; // NEED inject it to send http request
 import { Post } from './post.model';
+import { Router } from '@angular/router';
 
 
 @Injectable({providedIn: 'root'})  // this let angular find this service and use one instance across the entire app very important!
 export class PostService {
   private posts: Post[] = []; // private prevent access to posts from outside
   private postUpdated = new Subject<Post[]>();  // Subject instance named postUpdated,  Subject that
-  constructor(private _http: HttpClient ) {
+  constructor(private _http: HttpClient, private router: Router ) {
   }
 
   // always centralize HTTP requests in your service file
-  getPost() {
+  getPosts() {
     console.log('start posts.service.ts->getPost()');
     this._http
       .get<{ message: string, data: any }>( // Where this data from ? think
@@ -46,19 +47,19 @@ export class PostService {
 
   /* What is the difference between API call from server and a search in frontend? Think */
   /* frontend search directly return you the object, but http call return observerable not the object */
-  getPostFromBackEnd(id: string) {
-    console.log('start posts.service->getPostFromBackEnd()');
+  getPost(id: string) {
+    console.log('start posts.service->getPost()');
     return this._http.get<{_id: string, title: string, content: string}>(`http://localhost:3000/api/posts/${id}`);
     // return the observable, from backend, so its _id
   }
 
-
-  getPostById(id: string) {
-    return {...this.posts.find(p => p.id === id)};
-    // instead of doing backend API call to retrieve by id, we do FrontEnd find here
-    // here we use javascript find to match object id, and simply return the first matching one
-    // common practice is return new object using spread, spread operator is used to pull properties out of old object and create new one
-  }
+  // frontend search
+  // getPostById(id: string) {
+  //   return {...this.posts.find(p => p.id === id)};
+  //   // instead of doing backend API call to retrieve by id, we do FrontEnd find here
+  //   // here we use javascript find to match object id, and simply return the first matching one
+  //   // common practice is return new object using spread, spread operator is used to pull properties out of old object and create new one
+  // }
 
   getPostUpdateListener() {
     console.log('start posts.service->getPostUpdateListener()');
@@ -81,6 +82,7 @@ export class PostService {
              this.posts.push(post);
              console.log('check post added from res:', post);
              this.postUpdated.next([...this.posts]); // emit the COPY of updated posts thru Subject to all observers
+             this.router.navigate(['']); // once we done with update posts, we navigate to home
         }
       }
     );
@@ -105,6 +107,7 @@ export class PostService {
         console.log('after replace, now updatedPosts[oldPostIndex]=', updatedPosts[oldPostIndex]);
         this.posts = updatedPosts;
         this.postUpdated.next([...this.posts]); // tell app things changed and fire the new posts via Subject
+        this.router.navigate(['']); // once we done with edit posts, we navigate to home
       });
   }
 
@@ -120,6 +123,7 @@ export class PostService {
         // filter out the one that is deleted (so it doesn't show on page)
         this.posts = updatedPosts;
         this.postUpdated.next([...this.posts]); // send the updatedPosts to Subject
+        this.router.navigate(['']); // once we done with delete posts, we navigate to home
       });
   }
 }

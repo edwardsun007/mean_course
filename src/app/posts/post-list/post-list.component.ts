@@ -11,6 +11,7 @@ import { Router } from '@angular/router';
 
 export class PostListComponent implements OnInit, OnDestroy {
   posts: Post[] = []; // local variable not the one in service.ts
+  isLoading = false;
   private postsSub: Subscription; // for unsubscribe feature
 
   // @Input() posts: Post[] = []; // our root app has posts[] there,
@@ -27,10 +28,12 @@ export class PostListComponent implements OnInit, OnDestroy {
 
   ngOnInit() {
     console.log('start post-list.component.ts->ngOnInit()');
-    this._service.getPost();
+    this.isLoading = true; // let it spin
+    this._service.getPosts();
     this.postsSub = this._service.getPostUpdateListener()
       .subscribe((posts: Post[]) => { // subscribe to the observerable created in service.ts
         console.log('inside _service.getPostUpdateListener.subscribe()');
+        this.isLoading = false; // stop spin
         this.posts = posts;
       });
     /* vid 27 why click save post doesn't show new post?
@@ -40,9 +43,7 @@ export class PostListComponent implements OnInit, OnDestroy {
   }
 
   onDelete(id: string) {
-    console.log('start post-list comp->onDelete', id);
     this._service.deletePost(id);
-    this.goHome();
   }
 
   goHome() {

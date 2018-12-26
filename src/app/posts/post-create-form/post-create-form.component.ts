@@ -15,9 +15,10 @@ export class PostCreateFormComponent implements OnInit {
 
     enteredContent = '';
     enteredTitle = '';
+    post: Post; // create post broke because it starts with undefined
+    isLoading = false;
     private mode = 'Create'; // set our switch to tell if its create or edit mode
     private postId: string;
-    public post: Post; // create post broke because it starts with undefined
     // = { id: '', title: '', content: ''}
     // for store retrieve post found by id, need to be public so that form can access it
     // @Output() postCreated = new EventEmitter<Post>();
@@ -26,8 +27,16 @@ export class PostCreateFormComponent implements OnInit {
     // can be listenable from
     // outside of post-create component
     // injected ActivatedRoute, which contain info about which route we are on
-    constructor(public postSrv: PostService, public route: ActivatedRoute, public router: Router) {
+    constructor(
+      public postSrv: PostService,
+      public route: ActivatedRoute,
+      public router: Router) {
       console.log('start post-create-form.component.ts->constructor()...');
+      this.post = {
+        id: null,
+        title: '',
+        content: ''
+      };
     }
 
     ngOnInit() {
@@ -39,9 +48,9 @@ export class PostCreateFormComponent implements OnInit {
              console.log('create-form got postId:', paramMap.get('postId'));
              this.mode = 'Edit';
              this.postId = paramMap.get('postId'); // update our local member
-             let obs = this.postSrv.getPostFromBackEnd(this.postId); // backend return observable now
-             obs.subscribe(
-               postData => {
+             let obs = this.postSrv.getPost(this.postId); // backend return observable now
+             obs.subscribe( postData => {
+                 this.isLoading = false;  // once we get data from Mongo, set to false stop the spinner
                  this.post = {
                    id: postData._id,
                    title: postData.title,
@@ -59,27 +68,22 @@ export class PostCreateFormComponent implements OnInit {
     }
 
     /* note that we are passing ngForm type on the HTML to this method! */
-    onAddPost(formObject: NgForm) {
-      console.log('start post-create-form.component.ts->onAddPost()...');
-      // const post =  {
-      //   title: formObject.value.title,
-      //   content: formObject.value.content
-      // };
-      if (this.mode == 'Create') {
-        this.postSrv.addPost(formObject.value.title, formObject.value.content);
+    onSavePost(formObject: NgForm) {
+      console.log('start post-create-form.component.ts->onSavePost()...');
+      if (formObject.invalid) {
+        return;
       }
-      else {
-        this.postSrv.updatePost(this.postId, formObject.value.title, formObject.value.content);
-        // this.goHome(); // back to home route to see all posts
+      this.isLoading = true; // when user click save, spinner will be true
+      if (this.mode === 'Create') {
+        this.postSrv.addPost(formObject.value.title, formObject.value.content);
+      } else {
+        this.postSrv.updatePost(
+          this.postId,
+          formObject.value.title,
+          formObject.value.content);
       }
       // this.postCreated.emit(post);
       // emit with the value / things you want to fire to eventHandler
-
       formObject.resetForm(); // clear form input fields after submit
     }
-
-
-    // goHome() {
-    //   this.router.navigate(['']);
-    // }
 }

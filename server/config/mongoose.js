@@ -3,7 +3,7 @@ var path = require('path');
 
 var fs = require('fs');
 
-mongoose.connect('mongodb+srv:// @cluster0-93fyy.mongodb.net/test?retryWrites=true');
+mongoose.connect('mongodb+srv://dev007:DOZbYKwOgSzdjXq3@cluster0-93fyy.mongodb.net/test?retryWrites=true');
 // var uristring =
 // 	process.env.MONGOLAB_URI ||
 // 	process.env.MONGOHQ_URL ||

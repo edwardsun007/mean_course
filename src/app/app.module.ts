@@ -3,7 +3,8 @@ import { NgModule } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 
 // this installs parts we need to make app with colorful component from Angular material
-import { MatInputModule, MatCardModule, MatButtonModule, MatToolbarModule, MatExpansionModule, MatSidenavModule } from '@angular/material';
+import { MatInputModule, MatCardModule, MatButtonModule, MatToolbarModule,
+         MatExpansionModule, MatSidenavModule, MatProgressSpinnerModule } from '@angular/material';
 import { AppComponent } from './app.component';
 import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
 import { HeaderComponent } from './header/header.component';
@@ -30,6 +31,7 @@ import { AppRoutingModule } from './app.routing.module';
     MatToolbarModule,
     MatExpansionModule,
     MatSidenavModule,
+    MatProgressSpinnerModule,
     HttpClientModule
   ],
   providers: [],

@@ -1,9 +1,29 @@
-:host{
-  margin-top: 16px; /* 16px = 1rem */
+.wrapper{
+  /* margin-top: 100px; 16px = 1rem */
+  width: 60%;
+  padding-top:25px;
+  margin: auto;
+}
+
+mat-spinner{
+  width: 50%;
+  margin: auto;
+  margin-top: 50px;
+}
+
+mat-expansion-panel{
+  margin-bottom: 10px;
 }
 
 /* mat-accordion mat-expansion-panel{
   background-color: green;
+} */
+
+/*change panel font I write it in html instead of css
+css here gets ignored*/
+/* mat-expansion-panel mat-expansion-panel-header .mat-content .mat-expansion-panel-header .mat-expansion-panel{
+  font-family: 'Montserrat', sans-serif!important;
+  color:red;
 } */
 
 .info-txt{

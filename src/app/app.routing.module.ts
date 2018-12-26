@@ -9,13 +9,8 @@ const routes: Routes = [
   { path: 'edit/:postId', component: PostCreateFormComponent} // use same component to handle create and update here
 ];
 
-
 @NgModule({
   imports: [RouterModule.forRoot(routes)],  // add configuration with routes above
   exports: [RouterModule] // export so that other Angular Compo can use
 })
-
-export class AppRoutingModule {
-
-
-}
+export class AppRoutingModule {}

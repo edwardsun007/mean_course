@@ -1,8 +1,8 @@
 <mat-card>
-  <form (submit)="onAddPost(postForm)" #postForm="ngForm">
-    {{ post.title | json }}
+  <mat-spinner *ngIf="isLoading"></mat-spinner>
+  <form (submit)="onSavePost(postForm)" #postForm="ngForm" *ngIf="!isLoading">
     <mat-card-title>{{mode}} your post here:</mat-card-title>
-    <mat-form-field>
+    <mat-form-field floatLabel="never"> <!-- remove the float label-->
         <input matInput type="text"
           placeholder="Title"
           name='title'
@@ -20,16 +20,15 @@
             </mat-error>
         </mat-error>
     </mat-form-field>
-    {{ post.content | json }}
-    <mat-form-field>
-        <textarea matInput rows="6" placeholder="Content" name='content'
-           required
-           rows=4
-           minlength="3"
+    <mat-form-field floatLabel="never">
+        <textarea
+           matInput
+           rows="6"
            name="content"
+           minlength="3"
            [ngModel]="post?.content"
-           placeholder="Content"
            required
+           placeholder="Content"
            #content="ngModel">
         </textarea>
         <mat-error *ngIf="content.invalid && (content.dirty || content.touched)">
@@ -41,7 +40,10 @@
           </div>
         </mat-error>
     </mat-form-field>
-
+    <div class="img-loader">
+      <button (click)="filePicker.click()" mat-stroked-button type="button" color="primary">Upload Image</button>
+      <input type="file" #filePicker> <!--localRef is filePicker-->
+    </div>
     <button
       mat-raised-button
       color="primary"
