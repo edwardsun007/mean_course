@@ -1,6 +1,7 @@
 import { BrowserModule } from '@angular/platform-browser';
 import { NgModule } from '@angular/core';
-import { FormsModule } from '@angular/forms';
+import { ReactiveFormsModule } from '@angular/forms';
+// import { FormsModule } from '@angular/forms';
 
 // this installs parts we need to make app with colorful component from Angular material
 import { MatInputModule, MatCardModule, MatButtonModule, MatToolbarModule,
@@ -23,7 +24,7 @@ import { AppRoutingModule } from './app.routing.module';
   imports: [
     BrowserModule,
     AppRoutingModule,
-    FormsModule,
+    ReactiveFormsModule,
     BrowserAnimationsModule,
     MatInputModule,
     MatCardModule,

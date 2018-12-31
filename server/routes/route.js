@@ -1,16 +1,45 @@
 const express = require("express");
-
+const multer = require("multer");
 const Post = require("../models/post");
 
 const router = express.Router();
 
+const MIME_TYPE_MAP = {
+  'imgStore/png': 'png',
+  'imgStore/jpeg': 'jpg',
+  'imgStore/jpg': 'jpg'
+}
+
+const storage = multer.diskStorage({
+  destination: (req, file, cb) => { // called when multer tries to save file
+                //request, file, callback
+      const isValid = MIME_TYPE_MAP[file.mimetype];
+      let error = new Error("Invalid mime type");
+      if (isValid) {  // if its known extention set error to null
+        error = null;
+      }
+
+      console.log('before cb error line.');
+      cb(error, "server/imgStore"); // this path is relative to server.js not route.js
+  },
+  filename: (req,file,cb) => {
+    const name = file.originalname.toLowerCase().split(' ').join('-');//replace whitespace with dash
+    const ext = MIME_TYPE_MAP[file.mimetype];
+    cb(null, name + '-' + Date.now()+ '.' + ext)
+  }
+});
+
+
+
 /* RESTful API */
 // Add an new post
-router.post("", (req, res)=>{
+// add multer middleware, single means we only expect 1 single file
+router.post("", multer({storage: storage}).single("image"), (req, res)=>{
   // const post = req.body; // old way was get it via HTTP request
   const post = new Post({ // initiate instance of our model with javascript object
     title: req.body.title,
-    content: req.body.content
+    content: req.body.content,
+    image:req.body.image
   });
   post.save().then(
     createdPost => {

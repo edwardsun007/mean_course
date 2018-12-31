@@ -4,6 +4,7 @@ import { map } from 'rxjs/operators';
 import { HttpClient } from '@angular/common/http'; // NEED inject it to send http request
 import { Post } from './post.model';
 import { Router } from '@angular/router';
+import { post } from 'selenium-webdriver/http';
 
 
 @Injectable({providedIn: 'root'})  // this let angular find this service and use one instance across the entire app very important!
@@ -67,18 +68,29 @@ export class PostService {
     // creates new observerable with Subject called postUpdated as the source
   }
 
-  addPost(title: string, content: string) {
+  addPost(title: string, content: string, image: File) {
     console.log('start posts.service.ts->addPost()');
-    // tslint:disable-next-line:no-shadowed-variable
-    const post: Post = { id: null, title: title, content: content};
+    console.log('image=', image);
+    const postData = new FormData(); // javascript object allow us to combine form value and blob
+    postData.append( 'title', title ); // we append form fields to formdata
+    postData.append( 'content', content );
+    postData.append( 'image', image, title );
+    console.log('after appending,postData=', postData);
+    // // tslint:disable-next-line:no-shadowed-variable
+    // const post: Post = { id: null, title: title, content: content};
     /* still define the type you post, give URL, the return post body */
     /* dojo way is separate the subscribe part into component that calls service,
     service only has HTTP verb in it like put, get, delete, put */
-    this._http.post<{message: string, postId: string}>('http://localhost:3000/api/posts', post).subscribe(
+    this._http.post<{message: string, postId: string}>('http://localhost:3000/api/posts', postData).subscribe(
       (res) => {
-        if (res.message === 'Post added') { // only update if its successful API call
-             const id = res.postId;       // saved post will feed back json with its id now, pull it
-             post.id = id;
+        if (res.message === 'Post added') {   // only update if its successful API call
+             const post: Post = {
+               id: res.postId,
+               title: title,
+               content: content
+            };
+            //  const id = res.postId;           // saved post will feed back json with its id now, pull it
+            //  post.id = id;
              this.posts.push(post);
              console.log('check post added from res:', post);
              this.postUpdated.next([...this.posts]); // emit the COPY of updated posts thru Subject to all observers
