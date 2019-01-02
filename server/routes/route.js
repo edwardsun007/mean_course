@@ -5,9 +5,9 @@ const Post = require("../models/post");
 const router = express.Router();
 
 const MIME_TYPE_MAP = {
-  'imgStore/png': 'png',
-  'imgStore/jpeg': 'jpg',
-  'imgStore/jpg': 'jpg'
+  'image/png': 'png',
+  'image/jpeg': 'jpg',
+  'image/jpg': 'jpg'
 }
 
 const storage = multer.diskStorage({
@@ -18,9 +18,7 @@ const storage = multer.diskStorage({
       if (isValid) {  // if its known extention set error to null
         error = null;
       }
-
-      console.log('before cb error line.');
-      cb(error, "server/imgStore"); // this path is relative to server.js not route.js
+      cb(error, "server/images"); // this path is relative to server.js not route.js
   },
   filename: (req,file,cb) => {
     const name = file.originalname.toLowerCase().split(' ').join('-');//replace whitespace with dash
@@ -36,16 +34,25 @@ const storage = multer.diskStorage({
 // add multer middleware, single means we only expect 1 single file
 router.post("", multer({storage: storage}).single("image"), (req, res)=>{
   // const post = req.body; // old way was get it via HTTP request
+  console.log('req.get(host)=',req.get("host"));
+  const url = req.protocol + '://' + req.get("host");
   const post = new Post({ // initiate instance of our model with javascript object
     title: req.body.title,
     content: req.body.content,
-    image:req.body.image
+    imagePath: url + "/images/" + req.file.filename // post request create imagePath that has url /images/ in it
+    //image:req.body.image
   });
   post.save().then(
     createdPost => {
       res.status(201).json({
         message: "Post added",
-        postId: createdPost._id
+        post: {
+          ...createdPost,
+          id:createdPost._id
+          // title: createdPost.title,
+          // content: createdPost.content,
+          // imagePath: createdPost.imagePath
+        }
       });
     }
   );
@@ -125,13 +132,5 @@ router.delete("/:id", (req,res) => {
     }
   });
 });
-// router.get('router/posts/:id', (req,res)=>{
-//     Post.findById({_id:req.params.id}, (err,post)=>{
-//       if(err){
-//         res.json('find by id failed!',err);
-//       }else{
-//         res.json({message:"Post fetched successfully!",data: post});
-//       }
-//     });
-// });
+
 module.exports = router;

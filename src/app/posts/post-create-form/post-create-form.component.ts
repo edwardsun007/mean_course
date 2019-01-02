@@ -39,7 +39,8 @@ export class PostCreateFormComponent implements OnInit {
       this.post = {
         id: null,
         title: '',
-        content: ''
+        content: '',
+        imagePath: null
       };
     }
 
@@ -67,7 +68,8 @@ export class PostCreateFormComponent implements OnInit {
                  this.post = {
                    id: postData._id,
                    title: postData.title,
-                   content: postData.content
+                   content: postData.content,
+                   imagePath: postData.imagePath
                   };
                   // after we fetched data from database, set it to our form
                   this.form.setValue({

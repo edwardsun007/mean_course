@@ -5,6 +5,9 @@
       <mat-expansion-panel-header style="font-family: 'Merriweather', sans-serif; font-weight:700; font-size: 1.2em;">
       {{ post.title }}
       </mat-expansion-panel-header>
+      <div class="post-image">
+        <img [src]="post.imagePath" [alt]="post.title">
+      </div>
       <p style="font-family: 'Playfair+Display', serif; font-size:1.3em;">{{ post.content }}<p>
       <mat-action-row>
         <a [routerLink]="['/edit', post.id]" color="primary" mat-raised-button style="margin-right:10px;">EDIT</a>

@@ -4,8 +4,6 @@ import { map } from 'rxjs/operators';
 import { HttpClient } from '@angular/common/http'; // NEED inject it to send http request
 import { Post } from './post.model';
 import { Router } from '@angular/router';
-import { post } from 'selenium-webdriver/http';
-
 
 @Injectable({providedIn: 'root'})  // this let angular find this service and use one instance across the entire app very important!
 export class PostService {
@@ -27,7 +25,8 @@ export class PostService {
             return {
               title: post.title,
               content: post.content,
-              id: post._id
+              id: post._id,
+              imagePath: post.imagePath
             }; // remember this is from MongoDB, and it is _id in MongoDB
           });  // map here is javascript native map()
       })) // pipe allow use to add multiple operator BEFORE Let Angular listen to new data
@@ -50,7 +49,7 @@ export class PostService {
   /* frontend search directly return you the object, but http call return observerable not the object */
   getPost(id: string) {
     console.log('start posts.service->getPost()');
-    return this._http.get<{_id: string, title: string, content: string}>(`http://localhost:3000/api/posts/${id}`);
+    return this._http.get<{_id: string, title: string, content: string, imagePath: string}>(`http://localhost:3000/api/posts/${id}`);
     // return the observable, from backend, so its _id
   }
 
@@ -81,13 +80,14 @@ export class PostService {
     /* still define the type you post, give URL, the return post body */
     /* dojo way is separate the subscribe part into component that calls service,
     service only has HTTP verb in it like put, get, delete, put */
-    this._http.post<{message: string, postId: string}>('http://localhost:3000/api/posts', postData).subscribe(
+    this._http.post<{message: string, post: Post}>('http://localhost:3000/api/posts', postData).subscribe(
       (res) => {
         if (res.message === 'Post added') {   // only update if its successful API call
              const post: Post = {
-               id: res.postId,
-               title: title,
-               content: content
+               id: res.post.id,
+               title: title,     // either get it from the form via argument
+               content: content,  // or get them
+               imagePath: res.post.imagePath
             };
             //  const id = res.postId;           // saved post will feed back json with its id now, pull it
             //  post.id = id;
@@ -105,7 +105,8 @@ export class PostService {
     const post: Post = {
       id: id,
       title: title,
-      content: content
+      content: content,
+      imagePath: null
     };
     // {title: title, content: content}
     this._http.put(`http://localhost:3000/api/posts/${id}`, post)
