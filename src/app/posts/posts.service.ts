@@ -8,33 +8,40 @@ import { Router } from '@angular/router';
 @Injectable({providedIn: 'root'})  // this let angular find this service and use one instance across the entire app very important!
 export class PostService {
   private posts: Post[] = []; // private prevent access to posts from outside
-  private postUpdated = new Subject<Post[]>();  // Subject instance named postUpdated,  Subject that
+  private postUpdated = new Subject<{posts: Post[], maxPost: number}>();
+  // Subject instance named postUpdated,  Subject is defined as javascript object
+  // properties- posts[], maxPosts
   constructor(private _http: HttpClient, private router: Router ) {
   }
 
   // always centralize HTTP requests in your service file
-  getPosts() {
+  // with Pagination this function has to accept arguments now
+  getPosts(postsPerPage: number, currentPage: number) {
+    const queryParams = `?pageSize=${postsPerPage}&page=${currentPage}`;
     console.log('start posts.service.ts->getPost()');
     this._http
-      .get<{ message: string, data: any }>( // Where this data from ? think
+      .get<{ message: string, data: any, maxPosts: number }>( // Where this data from ? think
         // we are getting json response remember, {message: String, posts: Post[]} which is defined in our backend server.js
-        'http://localhost:3000/api/posts' // hardcoded URL point to path defined in server.js
+        'http://localhost:3000/api/posts' + queryParams // hardcoded URL point to path defined in server.js
       )
       .pipe(map((postData) => {
-          return postData.data.map( post => {
-            return {
-              title: post.title,
-              content: post.content,
-              id: post._id,
-              imagePath: post.imagePath
-            }; // remember this is from MongoDB, and it is _id in MongoDB
-          });  // map here is javascript native map()
+          return {
+            posts: postData.data.map( post => {
+              return {
+                title: post.title,
+                content: post.content,
+                id: post._id,
+                imagePath: post.imagePath
+              }; // remember this is from MongoDB, and it is _id in MongoDB
+            }),  // map here is javascript native map()
+            maxPosts: postData.maxPosts
+          };
       })) // pipe allow use to add multiple operator BEFORE Let Angular listen to new data
-      .subscribe(transformedPosts => { // transformedPosts will be array already
+      .subscribe(transformedPostData => { // transformedPosts will be array already
         // register with subscribe so that you can listen to the API path above
         // if ( postData.posts !== undefined ) {
-          this.posts = transformedPosts;
-          this.postUpdated.next([...this.posts]);
+          this.posts = transformedPostData.posts; // get posts property
+          this.postUpdated.next({posts: [...this.posts], maxPost: transformedPostData.maxPosts });
         // }
       });
 
@@ -82,44 +89,65 @@ export class PostService {
     service only has HTTP verb in it like put, get, delete, put */
     this._http.post<{message: string, post: Post}>('http://localhost:3000/api/posts', postData).subscribe(
       (res) => {
-        if (res.message === 'Post added') {   // only update if its successful API call
-             const post: Post = {
-               id: res.post.id,
-               title: title,     // either get it from the form via argument
-               content: content,  // or get them
-               imagePath: res.post.imagePath
-            };
-            //  const id = res.postId;           // saved post will feed back json with its id now, pull it
-            //  post.id = id;
-             this.posts.push(post);
-             console.log('check post added from res:', post);
-             this.postUpdated.next([...this.posts]); // emit the COPY of updated posts thru Subject to all observers
+        // if (res.message === 'Post added') {   // only update if its successful API call
+        //      const post: Post = {
+        //        id: res.post.id,
+        //        title: title,     // either get it from the form via argument
+        //        content: content,  // or get them
+        //        imagePath: res.post.imagePath
+        //     };
+        //     //  const id = res.postId;           // saved post will feed back json with its id now, pull it
+        //     //  post.id = id;
+        //      this.posts.push(post);
+        //      console.log('check post added from res:', post);
+        //      this.postUpdated.next({posts: [...this.posts], maxPost: transformedPostData.maxPosts });
+             // emit the COPY of updated posts thru Subject to all observers
              this.router.navigate(['']); // once we done with update posts, we navigate to home
-        }
+             // now here is thing: after we add new post, we navigate back to home
+             // therefore post-list component will start and call nginit anyway, which listens for subject
+             // so we really don't need to update our subject here, commented out the above code before navigate
       }
     );
   }
 
-  updatePost(id: string, title: string, content: string) {
+  updatePost(id: string, title: string, content: string, image: File | string) { //
     console.log('start posts.service->updatePost()');
-    const post: Post = {
-      id: id,
-      title: title,
-      content: content,
-      imagePath: null
-    };
-    // {title: title, content: content}
-    this._http.put(`http://localhost:3000/api/posts/${id}`, post)
+    let postData; // either Post Type or FormData Type
+    // since we use create form for both add post and update post, the image we upload could be two type:
+    // if use image picker to pick an image, image will be arrayBuffer -- object type
+    // if we click edit, it calls getPost from backend, imagePath will be string, it is string type
+    if (typeof(image) === 'object') {  // image is from filePicker, its File type / object
+      postData = new FormData(); // javascript object allow us to combine form and blog
+      postData.append('id', id); // error 'immutable field _id' happens because we are not passing the the same Id
+      postData.append('title', title);
+      postData.append('content', content);
+      postData.append('image', image, title);
+    } else { // existing image is string, we simply pass it via json
+      postData = {
+        id: id,
+        title: title,
+        content: content,
+        imagePath: image // string
+      };
+    }
+    this._http.put(`http://localhost:3000/api/posts/${id}`, postData)
       .subscribe(res => {
-        console.log(res);
-        const updatedPosts = [...this.posts]; // this is new post arrays after update
-        console.log('This is new posts array after update:', updatedPosts);
-        const oldPostIndex = updatedPosts.findIndex(p => p.id === post.id);  // frontend search with old post's id they are same
-        console.log('This is index of that oldPost', oldPostIndex);
-        updatedPosts[oldPostIndex] = post; // replace that index pos with the new post
-        console.log('after replace, now updatedPosts[oldPostIndex]=', updatedPosts[oldPostIndex]);
-        this.posts = updatedPosts;
-        this.postUpdated.next([...this.posts]); // tell app things changed and fire the new posts via Subject
+        // console.log(res);
+        // const updatedPosts = [...this.posts]; // this is new post arrays after update
+        // console.log('This is new posts array after update:', updatedPosts);
+        // const oldPostIndex = updatedPosts.findIndex(p => p.id === postData.id);  // frontend search with old post's id they are same
+        // console.log('This is index of that oldPost', oldPostIndex);
+
+        // const post: Post = {
+        //   id: id,
+        //   title: title,
+        //   content: content,
+        //   imagePath: '' // res.imagePath // API call put request, we get this from json
+        // };
+        // updatedPosts[oldPostIndex] = postData; // replace that index pos with the new post
+        // console.log('after replace, now updatedPosts[oldPostIndex]=', updatedPosts[oldPostIndex]);
+        // this.posts = updatedPosts;
+        // this.postUpdated.next([...this.posts]); // tell app things changed and fire the new posts via Subject
         this.router.navigate(['']); // once we done with edit posts, we navigate to home
       });
   }
@@ -127,16 +155,6 @@ export class PostService {
 
   deletePost(id: string) {
     console.log('start posts.service->deletePost()');
-    this._http.delete(`http://localhost:3000/api/posts/${id}`) // delete from backend
-      .subscribe((res) => {
-        console.log(res);
-        const updatedPosts = this.posts.filter( post => post.id !== id);
-        // this trick is used to delete it from Frontend
-        // keep the post that has different id from the deleted one
-        // filter out the one that is deleted (so it doesn't show on page)
-        this.posts = updatedPosts;
-        this.postUpdated.next([...this.posts]); // send the updatedPosts to Subject
-        this.router.navigate(['']); // once we done with delete posts, we navigate to home
-      });
+    return this._http.delete(`http://localhost:3000/api/posts/${id}`); // delete from backend
   }
 }

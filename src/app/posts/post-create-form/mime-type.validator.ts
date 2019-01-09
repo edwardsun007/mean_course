@@ -1,16 +1,21 @@
 import { AbstractControl } from '@angular/forms';
-import { Observable, Observer} from 'rxjs';
+import { Observable, Observer, of} from 'rxjs';
 
 /* async function return either Promise or Observable type
   Promise will have property which is string type
   value of the property will be anything
 */
 export const mimeType = (control: AbstractControl): Promise<{[key: string]: any}> | Observable<{[key: string]: any}> => {
+  if (typeof(control.value) === 'string') {
+    // of is a quick and easy way to emit object in rxjs
+    return of(null); // when its string , this means its valid to us developer, so we simply want the validator to be valid.
+  }
   const file = control.value as File;  // cast as File type
   const fileReader = new FileReader();
   const fileObs = Observable.create((observer: Observer<{[key: string]: any}>) => {
     // create our file observable with the create method， argument is observer which has string type property with value of anything
     fileReader.addEventListener('loadend', () => {
+      console.log('loadend listener starts...');
       const arr = new Uint8Array(<ArrayBuffer>fileReader.result).subarray(0, 4); // type casting to avoid ts error
       console.log(arr);
       let header = '';
@@ -44,6 +49,7 @@ export const mimeType = (control: AbstractControl): Promise<{[key: string]: any}
       // 8 bit unsigned interger because user might upload type like pdf, and we
       // have to look into the file to infer the file type
     });
+    console.log('before convert to arrayBuffer');
     fileReader.readAsArrayBuffer(file); // need to readAsArrayBuffer for mime type
   });
   return fileObs; // return our validated file Observerable

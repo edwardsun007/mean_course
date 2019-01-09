@@ -3,7 +3,9 @@ const express = require("express");
 const bodyParser = require("body-parser");
 const mongoose = require("mongoose");
 
-const postsRoutes = require("./routes/route");
+const postsRoutes = require("./routes/route"); // post related API request--create, edit, delete post
+
+const userRoutes = require("./routes/user"); // user related API request--login signup
 
 const app = express();
 
@@ -21,7 +23,7 @@ mongoose
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: false }));
 
-// if path contain /images in it, tell app to look inside server/images dirtory
+// if path contain /images in it, tell app to forward it to 'server/images' dirtory
 // the line below basically grant access to images folder on our server
 app.use("/images", express.static(path.join("server/images")));
 
@@ -39,5 +41,7 @@ app.use((req, res, next) => {
 });
 
 app.use("/api/posts", postsRoutes);
+
+app.use("/api/users", userRoutes); // api url prefix
 
 module.exports = app;

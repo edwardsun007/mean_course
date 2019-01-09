@@ -2,6 +2,7 @@ const express = require("express");
 const multer = require("multer");
 const Post = require("../models/post");
 
+const checkAuth = require('../middleware/check-auth'); // our middleware for check and verify token, add it in routes you want to protect
 const router = express.Router();
 
 const MIME_TYPE_MAP = {
@@ -32,7 +33,9 @@ const storage = multer.diskStorage({
 /* RESTful API */
 // Add an new post
 // add multer middleware, single means we only expect 1 single file
-router.post("", multer({storage: storage}).single("image"), (req, res)=>{
+router.post("",
+checkAuth,
+multer({storage: storage}).single("image"), (req, res)=>{
   // const post = req.body; // old way was get it via HTTP request
   console.log('req.get(host)=',req.get("host"));
   const url = req.protocol + '://' + req.get("host");
@@ -58,16 +61,27 @@ router.post("", multer({storage: storage}).single("image"), (req, res)=>{
   );
 });
 
-// update a post by id
-router.put("/:id", (req,res)=>{
+// update a post by id, however we could possibly update it with a new image !
+router.put("/:id",
+  checkAuth,  // after url path, before get to image
+  multer({storage: storage}).single("image"),
+  (req,res)=>{
+  let imagePath = req.body.imagePath; // from service updatePost, we are not uploading new file
   console.log('update api called:', req.params.id);
+  if(req.file){ // if user updated the image , then it is file type! follow logic in post
+    const url = req.protocol + '://' + req.get("host");
+    imagePath = url + "/images/" + req.file.filename; // CREATE path for new image
+  }
+  // req.file should be undefined if user is not uploading new image
+  // because there is no File type, the image is string
   const post = new Post({
     _id: req.body.id,
     title: req.body.title,
-    content: req.body.content
+    content: req.body.content,
+    imagePath: imagePath
   });
+  console.log('post=',post);
   Post.updateOne({_id: req.params.id}, post).then( result=> {
-    console.log(result);
     res.status(200).json({ message: "Update successful!" });
   });
 });
@@ -98,14 +112,32 @@ router.put("/:id", (req,res)=>{
 //       }
 //   );
 // });
-   // get all posts
+
+// get all posts
 router.get("", (req,res) => {
-  Post.find().then(documents => {
+  console.log(req.query); // This print things after ? in url
+  const pageSize = +req.query.pageSize;
+  const currentPage = +req.query.page;
+  const postQuery = Post.find();
+  let fetchedPosts;
+  if (pageSize && currentPage){
+    postQuery.skip(pageSize * (currentPage - 1)) // pagination good practice !
+    .limit(pageSize);  // limit number of docs MongoDB query returns
+    // mongoose function skip--specify number of documents to skip
+    // page 2 - 1 = 1 * pageSize e.g 10 = 10 ,  page 3 - 1 = 2 * 10 = 20
+  }
+  postQuery.then(documents => {
+    fetchedPosts = documents // store fetched posts
+    return Post.count(); // count number of docs
+    // once executed find() call another query count() and we don't need .then() here because it will
+    // listen for the next
+  }).then( count => {
     res.status(200).json({
       message: "Post fetched successfully!",
-      data: documents
+      data: fetchedPosts,
+      maxPosts: count
       });
-  });
+  })
 });
 
 
@@ -122,7 +154,7 @@ router.get("/:id", (req,res) => {
 });
 
 // delete a post by id
-router.delete("/:id", (req,res) => {
+router.delete("/:id", checkAuth, (req,res) => {
   console.log('API->deleteOne->called:', req.params.id);
   Post.findOneAndDelete({_id:req.params.id}, (err, post)=>{
     if(err){

@@ -3,11 +3,12 @@
   /* width:80%;
   height:80%; */
   /* margin:auto; */
-  background: url(/assets/images/main-bg.jpeg) no-repeat center center;
+  background: url(/assets/images/main-bg.jpeg) repeat-y center center;
     -webkit-background-attachment: fixed;
     background-attachment: fixed;
     background-size: cover;
-    height:100%;
+    height: 800%;  /*in case you see white edge when post opened up*/
+    width: 100%;
 }
 
 /* body{

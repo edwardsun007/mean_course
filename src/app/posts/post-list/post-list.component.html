@@ -1,4 +1,4 @@
-<div class="wrapper">
+<div class="list_wrapper">
   <mat-spinner *ngIf="isLoading" style="margin-top:50px;"></mat-spinner>
   <mat-accordion multi="true" *ngIf="posts.length > 0 && !isLoading">
     <mat-expansion-panel *ngFor="let post of posts">
@@ -8,7 +8,7 @@
       <div class="post-image">
         <img [src]="post.imagePath" [alt]="post.title">
       </div>
-      <p style="font-family: 'Playfair+Display', serif; font-size:1.3em;">{{ post.content }}<p>
+      <p style="font-family: 'Charm', cursive; font-size:1.5em;">{{ post.content }}<p>
       <mat-action-row>
         <a [routerLink]="['/edit', post.id]" color="primary" mat-raised-button style="margin-right:10px;">EDIT</a>
         <!--Edit became link now, point to edit link however, which also use postCreateForm compo-->
@@ -16,5 +16,7 @@
       </mat-action-row>
     </mat-expansion-panel>
   </mat-accordion>
+  <mat-paginator *ngIf="posts.length > 0" [length]="totalPosts" [pageSize]="postsPerPage" [pageSizeOptions]="pageSizeOptions" (page)="onChangePage($event)"></mat-paginator>
+  <!-- page Event -->
   <p class="info-txt mat-body-1" *ngIf="posts.length<=0 && !isLoading" >No Posts added yet!</p>
 </div>

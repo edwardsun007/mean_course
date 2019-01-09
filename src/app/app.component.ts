@@ -1,4 +1,5 @@
 import { Component } from '@angular/core';
+import { MatPaginatorIntl } from '@angular/material';
 // import { Post } from './posts/post.model';
 
 
@@ -8,6 +9,7 @@ import { Component } from '@angular/core';
   styleUrls: ['./app.component.css']
 })
 export class AppComponent {
+
   // example we can use our won defined interface type
   // existingPosts: Post[] = []; // renamed to avoid confusion
 

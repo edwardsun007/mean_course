@@ -10,6 +10,7 @@ mat-toolbar{
 a {
   text-decoration: None;
   color:white;
+  font-family: 'Arvo', serif;
 }
 
 .active-link{

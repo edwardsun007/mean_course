@@ -49,7 +49,11 @@ export class PostCreateFormComponent implements OnInit {
         title: new FormControl(null, {validators: [Validators.required, Validators.minLength(4)]
         }),
         content: new FormControl(null, {validators: [Validators.required]}),
-        image: new FormControl(null, { validators: [Validators.required], asyncValidators: [mimeType]}) // ourValidator is async
+        image: new FormControl(null,
+          {
+            validators: [Validators.required],
+            asyncValidators: [mimeType]
+          }) // ourValidator is async
       });
       // formgroup is top level object, by calling the constructuor above, we can pass key:value pair
       // and define our controls
@@ -71,10 +75,13 @@ export class PostCreateFormComponent implements OnInit {
                    content: postData.content,
                    imagePath: postData.imagePath
                   };
+                  console.log('this.post.imagePath=', this.post.imagePath);
+                  console.log('this.imagePreview=', this.imagePreview);
                   // after we fetched data from database, set it to our form
                   this.form.setValue({
                     title: this.post.title, // title is same as key used to create FormControl above
-                    content: this.post.content // content same as key used to create FormControl above
+                    content: this.post.content, // content same as key used to create FormControl above
+                    image: this.post.imagePath
                   });
                });
              // console.log('front end found post.title=', this.post.title);
@@ -121,7 +128,8 @@ export class PostCreateFormComponent implements OnInit {
         this.postSrv.updatePost(
           this.postId,
           this.form.value.title,
-          this.form.value.content
+          this.form.value.content,
+          this.form.value.image
         );
       }
       this.form.reset();

@@ -3,6 +3,9 @@ import { PostService } from '../posts.service';
 import { Post } from '../post.model';
 import { Subscription } from 'rxjs';
 import { Router } from '@angular/router';
+import { PageEvent } from '@angular/material';
+
+
 @Component({
   selector: 'app-post-list',
   templateUrl: './post-list.component.html',
@@ -12,6 +15,10 @@ import { Router } from '@angular/router';
 export class PostListComponent implements OnInit, OnDestroy {
   posts: Post[] = []; // local variable not the one in service.ts
   isLoading = false;
+  totalPosts: Number = 0;
+  postsPerPage = 2;
+  currentPage = 1; // default start page 1
+  pageSizeOptions = [1, 2, 3, 5, 7, 10];
   private postsSub: Subscription; // for unsubscribe feature
 
   // @Input() posts: Post[] = []; // our root app has posts[] there,
@@ -23,18 +30,19 @@ export class PostListComponent implements OnInit, OnDestroy {
   // postSrv: PostsService
   // inside constructor: this.postSrv = postSrv
   constructor(public _service: PostService, public _router: Router) {
-    console.log('start post-list.component.ts->constructor()');
   } // dependency injection
 
   ngOnInit() {
     console.log('start post-list.component.ts->ngOnInit()');
     this.isLoading = true; // let it spin
-    this._service.getPosts();
+    this._service.getPosts(this.postsPerPage, this.currentPage); // show 2 post per page and start on page 1 on init
     this.postsSub = this._service.getPostUpdateListener()
-      .subscribe((posts: Post[]) => { // subscribe to the observerable created in service.ts
+      .subscribe( (postData: { posts: Post[], maxPost: Number}) => {
+        // subscribe to the observerable created in service.ts, forgot what property it has? check posts.service.ts
         console.log('inside _service.getPostUpdateListener.subscribe()');
         this.isLoading = false; // stop spin
-        this.posts = posts;
+        this.posts = postData.posts;
+        this.totalPosts = postData.maxPost;
       });
     /* vid 27 why click save post doesn't show new post?
     because when post-list first created, you call getPost() which get empty array
@@ -42,8 +50,22 @@ export class PostListComponent implements OnInit, OnDestroy {
     */
   }
 
+  /* user click pagination logic */
+  onChangePage(pageData: PageEvent) {
+    console.log(pageData);
+    this.isLoading = true;
+    this.currentPage = pageData.pageIndex + 1; // pageEvent is 0 indexed, add 1 start from 1
+    this.postsPerPage = pageData.pageSize; // user setting of item per page
+    this._service.getPosts(this.postsPerPage, this.currentPage);
+  }
+
   onDelete(id: string) {
-    this._service.deletePost(id);
+    this.isLoading = true;
+    // tslint:disable-next-line:prefer-const
+    let obs = this._service.deletePost(id);
+    obs.subscribe(() => {
+      this._service.getPosts(this.postsPerPage, this.currentPage);
+    });
   }
 
   goHome() {
