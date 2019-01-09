@@ -19,3 +19,8 @@ mat-card {
   width: 40%;
   margin:auto;
 }
+
+.login-form > mat-spinner {
+  display: block;
+  margin:auto;
+}

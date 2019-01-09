@@ -10,6 +10,7 @@ import { AuthService } from '../auth.service';
 })
 
 export class SignupComponent implements OnInit {
+  isLoading = false;
 
   constructor(private _auth: AuthService ) { }
 
@@ -20,6 +21,9 @@ export class SignupComponent implements OnInit {
     if (form.invalid) {
       return;
     }
+
+    this.isLoading = true;
+
     this._auth.createUser(
       form.value.firstname,
       form.value.lastname,
