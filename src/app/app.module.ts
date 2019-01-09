@@ -11,14 +11,14 @@ import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
 import { HeaderComponent } from './header/header.component';
 import { PostListComponent } from './posts/post-list/post-list.component';
 import { PostCreateFormComponent } from './posts/post-create-form/post-create-form.component';
-import { HttpClientModule } from '@angular/common/http';
+import { HttpClientModule, HTTP_INTERCEPTORS } from '@angular/common/http';
 import { AppRoutingModule } from './app.routing.module';
 import { AuthComponent } from './auth/auth.component';
 import { LoginComponent } from './auth/login/login.component';
 import { SignupComponent } from './auth/signup/signup.component';
 
 import { MyPaginator } from './myPaginator';
-import { PostService } from './posts/posts.service';
+import { AuthInterceptor } from './auth/auth-interceptor';
 
 
 @NgModule({
@@ -47,7 +47,10 @@ import { PostService } from './posts/posts.service';
     MatPaginatorModule,
     HttpClientModule
   ],
-  providers: [ { provide: MatPaginatorIntl, useValue: MyPaginator() } ],
+  providers: [
+    { provide: MatPaginatorIntl, useValue: MyPaginator() },
+    { provide: HTTP_INTERCEPTORS, useClass: AuthInterceptor, multi: true } ],
+    // useClass -- don't overwrite original HTTPInterceptor, add it as additional one
   bootstrap: [AppComponent]
 })
 export class AppModule { }

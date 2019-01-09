@@ -1,5 +1,6 @@
 import { Component, Input, OnInit, OnDestroy } from '@angular/core';
 import { PostService } from '../posts.service';
+import { AuthService } from '../../auth/auth.service';
 import { Post } from '../post.model';
 import { Subscription } from 'rxjs';
 import { Router } from '@angular/router';
@@ -15,12 +16,13 @@ import { PageEvent } from '@angular/material';
 export class PostListComponent implements OnInit, OnDestroy {
   posts: Post[] = []; // local variable not the one in service.ts
   isLoading = false;
+  userIsAuthenticated = false; // init as not authenticated
   totalPosts: Number = 0;
   postsPerPage = 2;
   currentPage = 1; // default start page 1
   pageSizeOptions = [1, 2, 3, 5, 7, 10];
   private postsSub: Subscription; // for unsubscribe feature
-
+  private authStatusSub: Subscription; // listen for authenticate status
   // @Input() posts: Post[] = []; // our root app has posts[] there,
   // we want to pass it DOWN into post-list component to iterate
   // so here we use input() decorator to take it in
@@ -29,7 +31,7 @@ export class PostListComponent implements OnInit, OnDestroy {
   // [public _service] is exactly same as two lines below :
   // postSrv: PostsService
   // inside constructor: this.postSrv = postSrv
-  constructor(public _service: PostService, public _router: Router) {
+  constructor(public _service: PostService, public _router: Router, private authService: AuthService) {
   } // dependency injection
 
   ngOnInit() {
@@ -48,6 +50,12 @@ export class PostListComponent implements OnInit, OnDestroy {
     because when post-list first created, you call getPost() which get empty array
     later when you click save post to add new post object into posts array, list doesn't update itself
     */
+   this.userIsAuthenticated = this.authService.getAuthStatus();
+   console.log('this.userIsAuthenticated=', this.userIsAuthenticated);
+   this.authStatusSub = this.authService.getAuthStatusListener() // get authStatus
+    .subscribe(isAuthenticated => {
+      this.userIsAuthenticated = isAuthenticated;
+    });
   }
 
   /* user click pagination logic */
@@ -78,5 +86,6 @@ export class PostListComponent implements OnInit, OnDestroy {
   ngOnDestroy() {
     console.log('calling unsubscribe()...');
     this.postsSub.unsubscribe();
+    this.authStatusSub.unsubscribe();
   }
 }

@@ -17,7 +17,7 @@ const jwt = require('jsonwebtoken');
 module.exports = (req, res, next) => {
   /* if its not authenticated there will be no token in header, so wrap it in try */
   try {
-    const token = req.headers.authorization.split("")[1]; // 2nd part after Bearer space
+    const token = req.headers.authorization.split(" ")[1]; // 2nd part after Bearer space
     jwt.verify(token,'secret_usually_should_be_longer');   // verify the token, secret has to be same used for creating the token
     next(); // if no error proceed
   } catch (error) {

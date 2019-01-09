@@ -12,10 +12,10 @@ export class AuthInterceptor implements HttpInterceptor {
   intercept(req: HttpRequest<any>, next: HttpHandler) { // next allow us to leave intercept
     const authToken = this.authService.getToken();
     const authRequest = req.clone({
-      headers: req.headers.set('Authorization', authToken)
+      headers: req.headers.set('Authorization', 'Bearer ' + authToken)   // typical token format: "Bearer somelongtokenstring"
       // set new value for existing header, add new header if it doesn't exist
     }); // clone() create copy of outgoing request
-    return next.handle(req); // here simply send out the request without modifying
+    return next.handle(authRequest); // here simply send out the request without modifying
 
   }
 }
