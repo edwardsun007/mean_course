@@ -18,6 +18,9 @@ export class HeaderComponent implements OnInit, OnDestroy {
   } // inject AuthService
 
   ngOnInit() {
+    this.userIsAuthenticated = this.authService.getAuthStatus(); // call this to update userIsAuthenticated
+    // why login still shows on reloading page:
+    // app component get token faster than header gets the lasted userIsAuthenticated
     this.authListenerSubs = this.authService.getAuthStatusListener()
       .subscribe(isAuthenticated => {
         this.userIsAuthenticated = isAuthenticated;

@@ -58,7 +58,10 @@ multer({storage: storage}).single("image"), (req, res)=>{
         }
       });
     }
-  );
+  )
+  .catch(err=>{
+    res.json({error:err});
+  });
 });
 
 // update a post by id, however we could possibly update it with a new image !
@@ -143,13 +146,17 @@ router.get("", (req,res) => {
 
 // get single post based on id
 router.get("/:id", (req,res) => {
-  console.log('API->FindOne->called:',req.params.id);
+  console.log('get route /:id called:',req.params.id);
+  console.log('\n');
   Post.findById(req.params.id).then(post => {
     if(post){
       res.status(200).json(post); // if post not empty / undefined return it
     } else {
       res.status(404).json({message: 'Post not found!'});
     }
+  })
+  .catch(err=>{
+    res.json({error:err});
   })
 });
 

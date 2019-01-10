@@ -1,5 +1,6 @@
-import { Component } from '@angular/core';
+import { Component, OnInit } from '@angular/core';
 import { MatPaginatorIntl } from '@angular/material';
+import { AuthService } from './auth/auth.service';
 // import { Post } from './posts/post.model';
 
 
@@ -8,7 +9,16 @@ import { MatPaginatorIntl } from '@angular/material';
   templateUrl: './app.component.html',
   styleUrls: ['./app.component.css']
 })
-export class AppComponent {
+export class AppComponent implements OnInit {
+
+  constructor(private authService: AuthService) {
+
+  }
+
+  /* Because this is the first play when app load for 1st time or page reload, it is ideal to retrieve user auth status here */
+  ngOnInit() {
+    this.authService.autoAuthUser();
+  }
 
   // example we can use our won defined interface type
   // existingPosts: Post[] = []; // renamed to avoid confusion
