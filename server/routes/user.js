@@ -66,7 +66,8 @@ router.post("/login", (req, res) => {
           // expiresin 1h is good setting
           return res.status(200).json({
             token: token,
-            expiresIn: 3600
+            expiresIn: 3600, // in order to authorize frontend, we need to send userId to Angular
+            userId: user._id
           });// send back the token to client browser
         }
       })

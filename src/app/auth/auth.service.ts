@@ -13,6 +13,7 @@ export class AuthService {
   // edit delete button won't show even user is logged in
   private token: string;
   private tokenTimer: any; // for token expiresIn timing
+  private userId: string;  // for frontend authorization
   private authStatusListener = new Subject<boolean>();  // Subject usually are used for things that can change overtime
   // token should be cleared after logout for example
   // authStatusListener will push new info to Component that subscribe it when there is change
@@ -35,6 +36,10 @@ export class AuthService {
     return this.authStatusListener.asObservable();
   }
 
+  getUserId() {
+    return this.userId;
+  }
+
   createUser(firstname: string,  lastname: string, email: string, password: string) {
     const newUser: AuthData = {
       firstname: firstname,
@@ -54,7 +59,7 @@ export class AuthService {
       email: email,
       password: password
     };
-    this.http.post<{ token: string, expiresIn: number }>('http://localhost:3000/api/users/login', user)
+    this.http.post<{ token: string, expiresIn: number, userId: string }>('http://localhost:3000/api/users/login', user)
       .subscribe(res => {
         console.log(res);
         const token = res.token;
@@ -64,11 +69,12 @@ export class AuthService {
           this.setAuthTimer(expiresInDuration);  // after 3600 seconds = 1h, simply logout user
           console.log(expiresInDuration);
           this.isAuthenticated = true;
+          this.userId = res.userId; // login now return userId also for valid user
           this.authStatusListener.next(true);
           const now = new Date();
           const expirationDate = new Date(now.getTime() + expiresInDuration * 1000); // argument: millionia secs
           console.log(expirationDate);
-          this.saveAuthData(token, expirationDate); //
+          this.saveAuthData(token, expirationDate, this.userId); // login should save userId to browser if user is valid
           this.router.navigate(['/']); // redirect back to home
           // after login, set authStatus to true, next( value ) is way to pass
           // new value to Subject
@@ -86,9 +92,10 @@ export class AuthService {
       const expiresIn = autoAuthInfo.expirationDate.getTime() - now.getTime();
       // instead of verify token, we check if expiration date is ahead of cur time
       if (expiresIn > 0) { //
-        console.log('not expired.good');
+        console.log('not expired good');
         this.token = autoAuthInfo.token;
         this.isAuthenticated = true; // again tell interested component that user is still valid
+        this.userId = autoAuthInfo.userId; // authInfo contain userId , so should the localStorage if user is valid
         this.setAuthTimer(expiresIn / 1000); // pass secs
         this.authStatusListener.next(this.isAuthenticated);
       }
@@ -98,6 +105,7 @@ export class AuthService {
   set authStatusListener() remember*/
   logoutUser() {
     // clear token
+    this.userId = null;
     this.token = null;
     this.isAuthenticated = false;
     this.authStatusListener.next(false);
@@ -118,24 +126,30 @@ export class AuthService {
   private getAuthData() {
     const token = localStorage.getItem( 'token' );
     const expirationDate = localStorage.getItem('expiration');
+    const userId = localStorage.getItem('userId');
     if (expirationDate && token) {
       return {
         token: token,
-        expirationDate: new Date(expirationDate)
+        expirationDate: new Date(expirationDate),
+        userId: userId
       };
     } else {
       return;
     }
   }
 
-  /*  save Token and expiration Data into browser */
-  private saveAuthData(token: string, expiresDate: Date) {
+  /*  save Token and expiration Data into browser
+      of course, we need store userId in browser as well if user is valid
+  */
+  private saveAuthData(token: string, expiresDate: Date, userId: string) {
     localStorage.setItem('token', token);  // setItem(key, value)
     localStorage.setItem('expiration', expiresDate.toISOString());
+    localStorage.setItem('userId', userId);
   }
 
   private clearAuthData() {
     localStorage.removeItem('token');
     localStorage.removeItem('expiration');
+    localStorage.removeItem('userId');
   }
 }

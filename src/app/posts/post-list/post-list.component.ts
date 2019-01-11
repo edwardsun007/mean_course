@@ -17,6 +17,7 @@ export class PostListComponent implements OnInit, OnDestroy {
   posts: Post[] = []; // local variable not the one in service.ts
   isLoading = false;
   userIsAuthenticated = false; // init as not authenticated
+  userId: string;
   totalPosts: Number = 0;
   postsPerPage = 2;
   currentPage = 1; // default start page 1
@@ -38,6 +39,7 @@ export class PostListComponent implements OnInit, OnDestroy {
     console.log('start post-list.component.ts->ngOnInit()');
     this.isLoading = true; // let it spin
     this._service.getPosts(this.postsPerPage, this.currentPage); // show 2 post per page and start on page 1 on init
+    this.userId = this.authService.getUserId();
     this.postsSub = this._service.getPostUpdateListener()
       .subscribe( (postData: { posts: Post[], maxPost: Number}) => {
         // subscribe to the observerable created in service.ts, forgot what property it has? check posts.service.ts
@@ -50,11 +52,17 @@ export class PostListComponent implements OnInit, OnDestroy {
     because when post-list first created, you call getPost() which get empty array
     later when you click save post to add new post object into posts array, list doesn't update itself
     */
+
+  /* the following couple of lines take care of re-loading lost logged in status
+  whenever this component reload, retrieve authentication status by calling AuthStatus()
+  get authStatus from the Subject in authService
+  */
    this.userIsAuthenticated = this.authService.getAuthStatus();
    console.log('this.userIsAuthenticated=', this.userIsAuthenticated);
    this.authStatusSub = this.authService.getAuthStatusListener() // get authStatus
     .subscribe(isAuthenticated => {
       this.userIsAuthenticated = isAuthenticated;
+      this.userId = this.authService.getUserId();
     });
   }
 
