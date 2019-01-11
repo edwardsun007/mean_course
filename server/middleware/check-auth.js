@@ -18,8 +18,12 @@ module.exports = (req, res, next) => {
   /* if its not authenticated there will be no token in header, so wrap it in try */
   try {
     const token = req.headers.authorization.split(" ")[1]; // 2nd part after Bearer space
-    jwt.verify(token,'secret_usually_should_be_longer');   // verify the token, secret has to be same used for creating the token
-    next(); // if no error proceed
+    const decodedToken = jwt.verify(token,'secret_usually_should_be_longer');   // verify the token, secret has to be same used for creating the token
+    req.userData = {email: decodedToken.email, userId: decodedToken.userId}; // makesure there is no duplicate userData field in the original req object
+    next();
+    // keep in mind, next() allow us to go to th next middleware and any fields/members we created before next() line gonna stay
+    // any middleware running after next() has access to req.userData field
+    // if no error proceed
   } catch (error) {
     // jwt.verify fails will also throw error, make sure its inside try block
     res.status(401).json({message:'check-auth->Auth failed!'});

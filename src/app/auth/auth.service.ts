@@ -79,16 +79,19 @@ export class AuthService {
  /* automatic authenticate user if we have token in localStorage */
   autoAuthUser() {
     const autoAuthInfo = this.getAuthData();
-    const now = new Date();
-    const expiresIn = autoAuthInfo.expirationDate.getTime() - now.getTime();
-    // instead of verify token, we check if expiration date is ahead of cur time
-    if (expiresIn > 0) { //
-      console.log('not expired.good');
-      this.token = autoAuthInfo.token;
-      this.isAuthenticated = true; // again tell interested component that user is still valid
-      this.setAuthTimer(expiresIn / 1000); // pass secs
-      this.authStatusListener.next(this.isAuthenticated);
+    if (!autoAuthInfo) { // only proceed if there is auth Info
+        return;
     }
+      const now = new Date();
+      const expiresIn = autoAuthInfo.expirationDate.getTime() - now.getTime();
+      // instead of verify token, we check if expiration date is ahead of cur time
+      if (expiresIn > 0) { //
+        console.log('not expired.good');
+        this.token = autoAuthInfo.token;
+        this.isAuthenticated = true; // again tell interested component that user is still valid
+        this.setAuthTimer(expiresIn / 1000); // pass secs
+        this.authStatusListener.next(this.isAuthenticated);
+      }
   }
 
   /* clear token, set isAuthenticated to false, then tell all insterested component that authStatus changed, how?

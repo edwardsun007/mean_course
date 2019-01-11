@@ -58,8 +58,10 @@ router.post("/login", (req, res) => {
             {email: user.email, userId:user._id},
             'secret_usually_should_be_longer',
             { expiresIn: '1h' }
-            ); // 1st argu is payload -- data that you want to send back to client side
-          // NEVER put password in the payload to avoid Hacker !!!!
+            );
+          // 1st argu is payload -- data that you want to send back to the client side,
+          // this app's token contain email and userId
+          // you NEVER PUT password in the payload to avoid Hacker at any time !!!!
           // secret usually is some complicated random string to make sure the signature is uncrackable
           // expiresin 1h is good setting
           return res.status(200).json({

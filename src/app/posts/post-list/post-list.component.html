@@ -18,5 +18,5 @@
   </mat-accordion>
   <mat-paginator *ngIf="posts.length > 0" [length]="totalPosts" [pageSize]="postsPerPage" [pageSizeOptions]="pageSizeOptions" (page)="onChangePage($event)"></mat-paginator>
   <!-- page Event -->
-  <p class="info-txt mat-body-1" *ngIf="posts.length<=0 && !isLoading" >No Posts added yet!</p>
+  <p class="info-txt mat-body-1" *ngIf="posts.length<=0 && !isLoading" style="font-family:'Titillium Web', sans-serif; font-weight:700; font-size: 1.5em; color: #0E0B16; margin-top: 50px;">Create Your Very First Post <i class="far fa-smile" style="font-size:60px; color:orange; vertical-align: middle;"></i></p>
 </div>

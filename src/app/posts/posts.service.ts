@@ -31,13 +31,16 @@ export class PostService {
                 title: post.title,
                 content: post.content,
                 id: post._id,
-                imagePath: post.imagePath
+                imagePath: post.imagePath,
+                creator: post.creator
               }; // remember this is from MongoDB, and it is _id in MongoDB
             }),  // map here is javascript native map()
             maxPosts: postData.maxPosts
           };
       })) // pipe allow use to add multiple operator BEFORE Let Angular listen to new data
       .subscribe(transformedPostData => { // transformedPosts will be array already
+        console.log('checking transformedPostData:');
+        console.log(transformedPostData);
         // register with subscribe so that you can listen to the API path above
         // if ( postData.posts !== undefined ) {
           this.posts = transformedPostData.posts; // get posts property

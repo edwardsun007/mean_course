@@ -37,13 +37,13 @@ router.post("",
 checkAuth,
 multer({storage: storage}).single("image"), (req, res)=>{
   // const post = req.body; // old way was get it via HTTP request
-  console.log('req.get(host)=',req.get("host"));
+  console.log('req.get(host)=',req.get("host")); // localhost:3000
   const url = req.protocol + '://' + req.get("host");
   const post = new Post({ // initiate instance of our model with javascript object
     title: req.body.title,
     content: req.body.content,
-    imagePath: url + "/images/" + req.file.filename // post request create imagePath that has url /images/ in it
-    //image:req.body.image
+    imagePath: url + "/images/" + req.file.filename, // post request create imagePath that has url /images/ in it
+    creator: req.userData.userId
   });
   post.save().then(
     createdPost => {
@@ -84,8 +84,14 @@ router.put("/:id",
     imagePath: imagePath
   });
   console.log('post=',post);
-  Post.updateOne({_id: req.params.id}, post).then( result=> {
-    res.status(200).json({ message: "Update successful!" });
+  // now we let check-auth decode token and return userId, we can add another condition for updateOne
+  // that creator is userId decoded
+  Post.updateOne({_id: req.params.id, creator: req.userData.userId}, post).then( result=> {
+    if (result.nModified > 0){
+      res.status(200).json({ message: "Update successful!" });
+    } else {
+      res.status(401).json({message: "Not Authorized!"});
+    }
   });
 });
 
@@ -117,11 +123,12 @@ router.put("/:id",
 // });
 
 // get all posts
-router.get("", (req,res) => {
+router.get("", checkAuth, (req,res) => {
   console.log(req.query); // This print things after ? in url
   const pageSize = +req.query.pageSize;
   const currentPage = +req.query.page;
-  const postQuery = Post.find();
+  const curUID = req.userData.userId;
+  const postQuery = Post.find({creator: curUID});
   let fetchedPosts;
   if (pageSize && currentPage){
     postQuery.skip(pageSize * (currentPage - 1)) // pagination good practice !
@@ -163,13 +170,24 @@ router.get("/:id", (req,res) => {
 // delete a post by id
 router.delete("/:id", checkAuth, (req,res) => {
   console.log('API->deleteOne->called:', req.params.id);
-  Post.findOneAndDelete({_id:req.params.id}, (err, post)=>{
-    if(err){
-      res.json('delete failed! ',err);
-    }else{
-      res.status(200).json({ message: "Post deleted!"});
-    }
-  });
+
+  Post.deleteOne({_id:req.params.id, creator: req.userData.userId}).then(
+    result => {
+      console.log('del result:', result);
+      if (result.n > 0){
+        res.status(200).json({ message: "Post deleted!"});
+      } else {
+        res.status(401).json({ message: "UnAuthorized Delete!"});
+      }
+    })
+  // Post.findOneAndDelete({_id:req.params.id, creator: req.userData.userId}, (err, result)=>{
+
+  //   if(err){
+  //     res.json('delete failed! ',err);
+  //   }else{
+  //     res.status(200).json({ message: "Post deleted!"});
+  //   }
+  // });
 });
 
 module.exports = router;
